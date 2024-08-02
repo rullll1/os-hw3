@@ -191,7 +191,6 @@ void* pick_event_to_run(void* arg)
       gettimeofday(&request_stat.arrival_time, NULL); // TODO
       printf("Consuming %d\n", fd);
 
-      sleep(15);
       requestHandle(fd, &request_stat);
       timersub(&request_stat.dispatch_time, &request_stat.arrival_time, &request_stat.dispatch_time);
       Close(fd);

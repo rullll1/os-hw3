@@ -3,16 +3,16 @@
 #include "queue.h"
 #include <pthread.h>
 
-#define BLOCK_POLICY 1
-#define DROP_TAIL_POLICY 2
-#define DROP_HEAD_POLICY 3
-#define BLOCK_FLUSH_POLICY 4
+typedef enum {
+	BLOCK_POLICY = 1,
+	DROP_TAIL_POLICY,
+	DROP_HEAD_POLICY,
+	BLOCK_FLUSH_POLICY
+} Policy;
 
 int available_threads;  // Variable to indicate the number of available threads
 pthread_mutex_t available_threads_mutex;
 pthread_cond_t cond_all_available;
-
-
 
 // 
 // server.c: A very, very simple web server
@@ -25,26 +25,38 @@ pthread_cond_t cond_all_available;
 //
 
 // HW3: Parse the new arguments too
-void getargs(int *port, int argc, char *argv[])
+void getargs(int *port, int *policy, int argc, char *argv[])
 {
-    if (argc < 2) {
-	fprintf(stderr, "Usage: %s <port>\n", argv[0]);
-	exit(1);
+    if (argc < 3) {
+		fprintf(stderr, "Usage: %s <port> <policy>\n", argv[0]);
+		exit(EXIT_FAILURE);
     }
     *port = atoi(argv[1]);
+	const char* policyName = argv[2];
+	if (strcmp(policyName, "block") == 0) {
+		*policy = BLOCK_POLICY;
+	} else if (strcmp(policyName, "drop_tail") == 0) {
+		*policy = DROP_TAIL_POLICY;
+	} else if (strcmp(policyName, "drop_head") == 0) {
+		*policy = DROP_HEAD_POLICY;
+	} else if (strcmp(policyName, "block_flush") == 0) {
+		*policy = BLOCK_FLUSH_POLICY;
+	} else {
+		fprintf(stderr, "Unknown policy: %s\n", policyName);
+		exit( EXIT_FAILURE);
+	}
 }
 
 
-// int main(int argc, char *argv[])
-int main()
+int main(int argc, char *argv[])
 {
+	int listenfd, connfd, port, clientlen, policy;
+	struct sockaddr_in clientaddr;
 
-    int listenfd, connfd, port, clientlen, policy;
-    struct sockaddr_in clientaddr;
-	port = 8083;
-	clientlen = 1;
-	policy = BLOCK_FLUSH_POLICY;
+	getargs(&port, &policy, argc, argv);
+
 	Queue q;
+	clientlen = sizeof(clientaddr);
 	init_queue(&q, clientlen);
 	pthread_mutex_init(&available_threads_mutex, NULL);
 	pthread_cond_init(&cond_all_available, NULL);
@@ -62,7 +74,7 @@ int main()
 		thread_args_t* args = (thread_args_t*)malloc(sizeof(thread_args_t));
 		if (args == NULL) {
 			perror("malloc");
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 		args->id = t;
 		args->q = &q;
@@ -70,7 +82,7 @@ int main()
 		if (rc) {
 			printf("ERROR; return code from pthread_create() is %d\n", rc);
 			free(threads);
-			exit(-1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -121,13 +133,6 @@ int main()
     }
 
 }
-
-
-    
-
-
- 
-
 
 // thread 1 q 1 busy 1
 // thread 1 q 0 busy 1
