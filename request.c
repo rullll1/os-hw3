@@ -10,7 +10,6 @@ int available_threads;  // Variable to indicate the number of available threads
 pthread_mutex_t available_threads_mutex;
 pthread_cond_t cond_all_available;
 
-
 // requestError(      fd,    filename,        "404",    "Not found", "OS-HW3 Server could not find this file");
 void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg, request_stat_t* request_stat)
 {
@@ -188,13 +187,14 @@ int cropSkip(char *str) {
 }
 
 // handle a request
-void* pick_event_to_run(void* q_ptr)
+void* pick_event_to_run(void* arg)
 {
-   Queue* q = (Queue*) q_ptr;
+   thread_args_t* args = (thread_args_t*)arg;
+   Queue* q = args->q;
    int fd;
    int run_last = 0;
    request_stat_t request_stat = { 0 };
-   request_stat.thread_id = 1; // TODO:
+   request_stat.thread_id = args->id;
    // printf("we have %d\n", available_threads);
    while (1) {
       run_last = 0;
@@ -205,7 +205,7 @@ void* pick_event_to_run(void* q_ptr)
       gettimeofday(&request_stat.dispatch_time, NULL);
       gettimeofday(&request_stat.arrival_time, NULL); // TODO
       printf("Consuming %d\n", fd);
-      sleep(15);
+
       requestHandle(fd, &request_stat, q_ptr, &run_last);
       timersub(&request_stat.dispatch_time, &request_stat.arrival_time, &request_stat.dispatch_time);
 
