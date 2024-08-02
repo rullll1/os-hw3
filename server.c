@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     // HW3: Create some threads...
     pthread_t *threads = malloc(clientlen * sizeof(pthread_t));
 	int rc;
-	for(int t = 0; t < clientlen; t++) {
+	for(int t = 0; t < threads_num; t++) {
 		printf("Creating thread %d\n", t);
 		thread_args_t* args = (thread_args_t*)malloc(sizeof(thread_args_t));
 		if (args == NULL) {
