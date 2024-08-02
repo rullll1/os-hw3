@@ -25,22 +25,24 @@ pthread_cond_t cond_all_available;
 //
 
 // HW3: Parse the new arguments too
-void getargs(int *port, int *policy, int argc, char *argv[])
+void getargs(int *port, int *threads_num, int *queue_size, int *schedalg, int argc, char *argv[])
 {
-    if (argc < 3) {
-		fprintf(stderr, "Usage: %s <port> <policy>\n", argv[0]);
+    if (argc < 5) {
+		fprintf(stderr, "Usage: %s <port> <threads> <queue_size> <schedalg>\n", argv[0]);
 		exit(EXIT_FAILURE);
     }
     *port = atoi(argv[1]);
-	const char* policyName = argv[2];
+	*threads_num = atoi(argv[2]);
+	*queue_size = atoi(argv[3]);
+	const char* policyName = argv[4];
 	if (strcmp(policyName, "block") == 0) {
-		*policy = BLOCK_POLICY;
+		*schedalg = BLOCK_POLICY;
 	} else if (strcmp(policyName, "drop_tail") == 0) {
-		*policy = DROP_TAIL_POLICY;
+		*schedalg = DROP_TAIL_POLICY;
 	} else if (strcmp(policyName, "drop_head") == 0) {
-		*policy = DROP_HEAD_POLICY;
+		*schedalg = DROP_HEAD_POLICY;
 	} else if (strcmp(policyName, "block_flush") == 0) {
-		*policy = BLOCK_FLUSH_POLICY;
+		*schedalg = BLOCK_FLUSH_POLICY;
 	} else {
 		fprintf(stderr, "Unknown policy: %s\n", policyName);
 		exit( EXIT_FAILURE);
@@ -50,10 +52,10 @@ void getargs(int *port, int *policy, int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-	int listenfd, connfd, port, clientlen, policy;
+	int listenfd, connfd, port, clientlen, threads_num, queue_size, schedalg;
 	struct sockaddr_in clientaddr;
 
-	getargs(&port, &policy, argc, argv);
+	getargs(&port, &threads_num, &queue_size, &schedalg, argc, argv);
 
 	Queue q;
 	clientlen = sizeof(clientaddr);
@@ -65,7 +67,7 @@ int main(int argc, char *argv[])
 
     // getargs(&port, argc, argv);
 
-    // 
+    //
     // HW3: Create some threads...
     pthread_t *threads = malloc(clientlen * sizeof(pthread_t));
 	int rc;
@@ -94,18 +96,18 @@ int main(int argc, char *argv[])
 		connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
     	// int fd = open("example.txt", O_RDONLY);
     	if (q.size == q.count) { // it is full
-    		if (policy == BLOCK_POLICY) {
+    		if (schedalg == BLOCK_POLICY) {
     			enqueue(&q, connfd);
     		}
-    		else if (policy == DROP_TAIL_POLICY) {
+    		else if (schedalg == DROP_TAIL_POLICY) {
     			// dont add the latest conn
     			Close(connfd);
     		}
-    		else if (policy == DROP_HEAD_POLICY) {
+    		else if (schedalg == DROP_HEAD_POLICY) {
     			dequeue(&q);
     			enqueue(&q, connfd);
     		}
-    		else if (policy == BLOCK_FLUSH_POLICY) {
+    		else if (schedalg == BLOCK_FLUSH_POLICY) {
     			pthread_mutex_lock(&available_threads_mutex);
     			while (available_threads != q.size) {
     				printf("we have %d threads available\n", available_threads);
