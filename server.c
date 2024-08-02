@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
     	else {
     		enqueue(&q, connfd);
     	}
-    	printf("%d\n", connfd);
+    	// printf("%d\n", connfd);
 		//
 		// HW3: In general, don't handle the request in the main thread.
 		// Save the relevant info in a buffer and have one of the worker threads
