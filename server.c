@@ -59,7 +59,14 @@ int main()
 	int rc;
 	for(int t = 0; t < clientlen; t++) {
 		printf("Creating thread %d\n", t);
-		rc = pthread_create(&threads[t], NULL, pick_event_to_run, (void*)&q);
+		thread_args_t* args = (thread_args_t*)malloc(sizeof(thread_args_t));
+		if (args == NULL) {
+			perror("malloc");
+			exit(-1);
+		}
+		args->id = t;
+		args->q = &q;
+		rc = pthread_create(&threads[t], NULL, pick_event_to_run, (void*)args);
 		if (rc) {
 			printf("ERROR; return code from pthread_create() is %d\n", rc);
 			free(threads);

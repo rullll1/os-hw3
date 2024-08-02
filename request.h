@@ -1,6 +1,7 @@
 #ifndef __REQUEST_H__
 #include <stddef.h>
 #include <sys/time.h>
+#include "queue.h"
 
 typedef struct request_stat {
     size_t thread_id;
@@ -10,6 +11,11 @@ typedef struct request_stat {
     size_t static_count;
     size_t dynamic_count;
 } request_stat_t;
+
+typedef struct {
+    int id;
+    Queue *q;
+} thread_args_t;
 
 void requestHandle(int fd, request_stat_t* request_stat);
 void* pick_event_to_run(void* q_ptr);
