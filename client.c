@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   host = argv[1];
   port = atoi(argv[2]);
   filename = argv[3];
-  printf("%s\n", filename);
+  // printf("%s\n", filename);
   /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
   
