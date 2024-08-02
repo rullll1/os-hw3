@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
 	Queue q;
 	clientlen = sizeof(clientaddr);
-	init_queue(&q, q_size);
+	init_queue(&q, queue_size);
 	pthread_mutex_init(&available_threads_mutex, NULL);
 	pthread_cond_init(&cond_all_available, NULL);
 
