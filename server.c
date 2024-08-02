@@ -37,11 +37,11 @@ void getargs(int *port, int *threads_num, int *queue_size, int *schedalg, int ar
 	const char* policyName = argv[4];
 	if (strcmp(policyName, "block") == 0) {
 		*schedalg = BLOCK_POLICY;
-	} else if (strcmp(policyName, "drop_tail") == 0) {
+	} else if (strcmp(policyName, "dt") == 0) {
 		*schedalg = DROP_TAIL_POLICY;
-	} else if (strcmp(policyName, "drop_head") == 0) {
+	} else if (strcmp(policyName, "dh") == 0) {
 		*schedalg = DROP_HEAD_POLICY;
-	} else if (strcmp(policyName, "block_flush") == 0) {
+	} else if (strcmp(policyName, "bf") == 0) {
 		*schedalg = BLOCK_FLUSH_POLICY;
 	} else {
 		fprintf(stderr, "Unknown policy: %s\n", policyName);
@@ -58,18 +58,17 @@ int main(int argc, char *argv[])
 	getargs(&port, &threads_num, &queue_size, &schedalg, argc, argv);
 
 	Queue q;
-	clientlen = sizeof(clientaddr);
 	init_queue(&q, queue_size);
 	pthread_mutex_init(&available_threads_mutex, NULL);
 	pthread_cond_init(&cond_all_available, NULL);
 
-	available_threads = clientlen;
+	available_threads = threads_num;
 
     // getargs(&port, argc, argv);
 
     //
     // HW3: Create some threads...
-    pthread_t *threads = malloc(clientlen * sizeof(pthread_t));
+    pthread_t *threads = malloc(threads_num * sizeof(pthread_t));
 	int rc;
 	for(int t = 0; t < threads_num; t++) {
 		// printf("Creating thread %d\n", t);
