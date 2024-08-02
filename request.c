@@ -121,6 +121,7 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, request_stat_t* 
    // The CGI script has to finish writing out the header.
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
+
    sprintf(buf, "%sStat-Req-Arrival:: %ld.%06ld\r\n", buf, request_stat->arrival_time.tv_sec, request_stat->arrival_time.tv_usec);
    sprintf(buf, "%sStat-Req-Dispatch:: %ld.%06ld\r\n", buf, request_stat->dispatch_time.tv_sec, request_stat->dispatch_time.tv_usec);
    sprintf(buf, "%sStat-Thread-Id:: %ld\r\n", buf, request_stat->thread_id);
@@ -159,7 +160,8 @@ void requestServeStatic(int fd, char *filename, int filesize, request_stat_t* re
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
    sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
    sprintf(buf, "%sContent-Length: %d\r\n", buf, filesize);
-   sprintf(buf, "%sContent-Type: %s\r\n\r\n", buf, filetype);
+   sprintf(buf, "%sContent-Type: %s\r\n", buf, filetype);
+
    sprintf(buf, "%sStat-Req-Arrival:: %ld.%06ld\r\n", buf, request_stat->arrival_time.tv_sec, request_stat->arrival_time.tv_usec);
    sprintf(buf, "%sStat-Req-Dispatch:: %ld.%06ld\r\n", buf, request_stat->dispatch_time.tv_sec, request_stat->dispatch_time.tv_usec);
    sprintf(buf, "%sStat-Thread-Id:: %ld\r\n", buf, request_stat->thread_id);
