@@ -7,6 +7,7 @@
 #define DROP_TAIL_POLICY 2
 #define DROP_HEAD_POLICY 3
 #define BLOCK_FLUSH_POLICY 4
+#define DROP_RANDOM_POLICY 5
 
 int available_threads;  // Variable to indicate the number of available threads
 pthread_mutex_t available_threads_mutex;
@@ -42,10 +43,11 @@ int main()
     int listenfd, connfd, port, clientlen, policy;
     struct sockaddr_in clientaddr;
 	port = 8083;
-	clientlen = 1;
+	clientlen = 2;
+	int q_size = 3;
 	policy = BLOCK_FLUSH_POLICY;
 	Queue q;
-	init_queue(&q, clientlen);
+	init_queue(&q, q_size);
 	pthread_mutex_init(&available_threads_mutex, NULL);
 	pthread_cond_init(&cond_all_available, NULL);
 
@@ -58,17 +60,17 @@ int main()
     pthread_t *threads = malloc(clientlen * sizeof(pthread_t));
 	int rc;
 	for(int t = 0; t < clientlen; t++) {
-		printf("Creating thread %d\n", t);
+		// printf("Creating thread %d\n", t);
 		rc = pthread_create(&threads[t], NULL, pick_event_to_run, (void*)&q);
 		if (rc) {
-			printf("ERROR; return code from pthread_create() is %d\n", rc);
+			// printf("ERROR; return code from pthread_create() is %d\n", rc);
 			free(threads);
 			exit(-1);
 		}
 	}
 
     //
-	printf("hello server\n");
+	// printf("hello server\n");
     listenfd = Open_listenfd(port);
     while (1) {
 		clientlen = sizeof(clientaddr);
@@ -89,14 +91,14 @@ int main()
     		else if (policy == BLOCK_FLUSH_POLICY) {
     			pthread_mutex_lock(&available_threads_mutex);
     			while (available_threads != q.size) {
-    				printf("we have %d threads available\n", available_threads);
-    				printf("going to sleep now...\n");
+    				// printf("we have %d threads available\n", available_threads);
+    				// printf("going to sleep now...\n");
     				pthread_cond_wait(&cond_all_available, &available_threads_mutex);
-    				printf("after waking up, we have %d threads available\n", available_threads);
+    				// printf("after waking up, we have %d threads available\n", available_threads);
     			}
     			pthread_mutex_unlock(&available_threads_mutex);
     			Close(connfd);
-    			printf("I am awake now\n");
+    			// printf("I am awake now\n");
     		}
     	}
     	else {

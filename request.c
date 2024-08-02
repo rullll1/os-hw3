@@ -174,15 +174,30 @@ void requestServeStatic(int fd, char *filename, int filesize, request_stat_t* re
 
 }
 
+int cropSkip(char *str) {
+   const char *suffix = ".skip";
+   size_t lenSuffix = strlen(suffix);
+   size_t lenStr = strlen(str);
+
+   // Ensure the string is long enough to contain the suffix
+   if (lenStr >= lenSuffix && strcmp(str + lenStr - lenSuffix, suffix) == 0) {
+      str[lenStr - lenSuffix] = '\0'; // Crop the suffix
+      return 1;
+   }
+   return 0; // string was not cropped
+}
+
 // handle a request
 void* pick_event_to_run(void* q_ptr)
 {
    Queue* q = (Queue*) q_ptr;
    int fd;
+   int run_last = 0;
    request_stat_t request_stat = { 0 };
    request_stat.thread_id = 1; // TODO:
-   printf("we have %d\n", available_threads);
+   // printf("we have %d\n", available_threads);
    while (1) {
+      run_last = 0;
       fd = dequeue(q);
       pthread_mutex_lock(&available_threads_mutex);
       available_threads--;  // Mark thread as busy
@@ -190,11 +205,17 @@ void* pick_event_to_run(void* q_ptr)
       gettimeofday(&request_stat.dispatch_time, NULL);
       gettimeofday(&request_stat.arrival_time, NULL); // TODO
       printf("Consuming %d\n", fd);
-
       sleep(15);
-      requestHandle(fd, &request_stat);
+      requestHandle(fd, &request_stat, q_ptr, &run_last);
       timersub(&request_stat.dispatch_time, &request_stat.arrival_time, &request_stat.dispatch_time);
+
       Close(fd);
+      if (run_last != 0) {
+
+         requestHandle(run_last, &request_stat, q_ptr, &run_last); // TODO: create new stats for new requests
+         timersub(&request_stat.dispatch_time, &request_stat.arrival_time, &request_stat.dispatch_time);
+         Close(run_last);
+      }
       pthread_mutex_lock(&available_threads_mutex);
       available_threads++;  // Mark thread as busy
       if (available_threads == q->size && q->size != q->count) {
@@ -205,7 +226,7 @@ void* pick_event_to_run(void* q_ptr)
    }
 }
 
-void requestHandle(int fd, request_stat_t* request_stat)
+void requestHandle(int fd, request_stat_t* request_stat, void* q_ptr, int* run_last)
 {
 
    int is_static;
@@ -213,13 +234,16 @@ void requestHandle(int fd, request_stat_t* request_stat)
    char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
    char filename[MAXLINE], cgiargs[MAXLINE];
    rio_t rio;
+   Queue* q = (Queue*) q_ptr;
 
    request_stat->total_count++;
 
    Rio_readinitb(&rio, fd);
    Rio_readlineb(&rio, buf, MAXLINE);
    sscanf(buf, "%s %s %s", method, uri, version);
-
+   if (cropSkip(uri) == 1) {
+      *run_last = remove_latest(q);
+   }
    printf("%s %s %s\n", method, uri, version);
 
    if (strcasecmp(method, "GET")) {
@@ -252,3 +276,6 @@ void requestHandle(int fd, request_stat_t* request_stat)
 }
 
 
+
+
+// home.html blabla.html /skip. /home.html /bla

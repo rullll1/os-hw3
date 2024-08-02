@@ -11,6 +11,6 @@ typedef struct request_stat {
     size_t dynamic_count;
 } request_stat_t;
 
-void requestHandle(int fd, request_stat_t* request_stat);
+void requestHandle(int fd, request_stat_t* request_stat, void* q_ptr, int* run_last);
 void* pick_event_to_run(void* q_ptr);
 #endif
