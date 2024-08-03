@@ -68,11 +68,12 @@ int main(int argc, char *argv[])
 
     //
     // HW3: Create some threads...
+	thread_args_t* args = (thread_args_t*)malloc(sizeof(thread_args_t));
     pthread_t *threads = malloc(threads_num * sizeof(pthread_t));
 	int rc;
 	for(int t = 0; t < threads_num; t++) {
 		// printf("Creating thread %d\n", t);
-		thread_args_t* args = (thread_args_t*)malloc(sizeof(thread_args_t));
+
 		if (args == NULL) {
 			perror("malloc");
 			exit(EXIT_FAILURE);
@@ -93,6 +94,7 @@ int main(int argc, char *argv[])
     while (1) {
 		clientlen = sizeof(clientaddr);
 		connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
+    	gettimeofday(&args->arrival_time, NULL);
     	// int fd = open("example.txt", O_RDONLY);
     	if (q.size == q.count) { // it is full
     		if (schedalg == BLOCK_POLICY) {
@@ -122,19 +124,6 @@ int main(int argc, char *argv[])
     	else {
     		enqueue(&q, connfd);
     	}
-    	// printf("%d\n", connfd);
-		//
-		// HW3: In general, don't handle the request in the main thread.
-		// Save the relevant info in a buffer and have one of the worker threads
-		// do the work.
-		//
-		// requestHandle(connfd);
-
-		// Close(connfd);
     }
 
 }
-
-// thread 1 q 1 busy 1
-// thread 1 q 0 busy 1
-// thread 0 q 0

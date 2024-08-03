@@ -15,6 +15,7 @@ typedef struct request_stat {
 typedef struct {
     int id;
     Queue *q;
+    struct timeval arrival_time;
 } thread_args_t;
 
 void requestHandle(int fd, request_stat_t* request_stat, void* q_ptr, int* run_last);

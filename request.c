@@ -207,17 +207,14 @@ void* pick_event_to_run(void* arg)
       available_threads--;  // Mark thread as busy
       pthread_mutex_unlock(&available_threads_mutex);
       gettimeofday(&request_stat.dispatch_time, NULL);
-      gettimeofday(&request_stat.arrival_time, NULL); // TODO
+      request_stat.arrival_time = args->arrival_time;
       // printf("Consuming %d\n", fd);
-
-      requestHandle(fd, &request_stat, q, &run_last);
       timersub(&request_stat.dispatch_time, &request_stat.arrival_time, &request_stat.dispatch_time);
-
+      requestHandle(fd, &request_stat, q, &run_last);
       Close(fd);
       if (run_last != 0) {
 
          requestHandle(run_last, &request_stat, q, &run_last); // TODO: create new stats for new requests
-         timersub(&request_stat.dispatch_time, &request_stat.arrival_time, &request_stat.dispatch_time);
          Close(run_last);
       }
       pthread_mutex_lock(&available_threads_mutex);
