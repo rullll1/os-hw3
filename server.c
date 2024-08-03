@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 		connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
     	gettimeofday(&args->arrival_time, NULL);
     	// int fd = open("example.txt", O_RDONLY);
-    	if (q.size == q.count) { // it is full
+    	if (q.size == q.count + threads_num - available_threads) { // it is full
     		if (schedalg == BLOCK_POLICY) {
     			enqueue(&q, connfd);
     		}
@@ -104,7 +104,12 @@ int main(int argc, char *argv[])
     			Close(connfd);
     		}
     		else if (schedalg == DROP_HEAD_POLICY) {
-    			dequeue(&q);
+    			// printf("q count is %d\n", q.count);
+    			// printf("working threads %d\n", threads_num - available_threads);
+    			int x = dequeue(&q);
+
+    			Close(x);
+
     			enqueue(&q, connfd);
     		}
     		else if (schedalg == BLOCK_FLUSH_POLICY) {
