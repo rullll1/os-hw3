@@ -198,7 +198,7 @@ void* pick_event_to_run(void* arg)
    int fd;
    int run_last = 0;
    request_stat_t request_stat = { 0 };
-   request_stat.thread_id = args->id;
+   request_stat.thread_id = pthread_self();
    // printf("we have %d\n", available_threads);
    while (1) {
       run_last = 0;

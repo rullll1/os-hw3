@@ -78,7 +78,6 @@ int main(int argc, char *argv[])
 			perror("malloc");
 			exit(EXIT_FAILURE);
 		}
-		args->id = t;
 		args->q = &q;
 		rc = pthread_create(&threads[t], NULL, pick_event_to_run, (void*)args);
 		if (rc) {

@@ -13,7 +13,6 @@ typedef struct request_stat {
 } request_stat_t;
 
 typedef struct {
-    int id;
     Queue *q;
     struct timeval arrival_time;
 } thread_args_t;
