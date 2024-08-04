@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void init_queue(Queue *q, int size) {
+void init_queue(Queue *q, int size, int max_threads) {
     q->size = size;
     q->items = (int *)malloc(size * sizeof(int));
     if (q->items == NULL) {
@@ -15,6 +15,7 @@ void init_queue(Queue *q, int size) {
     q->front = 0;
     q->rear = 0;
     q->count = 0;
+    q->max_threads = max_threads;
     pthread_mutex_init(&q->mutex, NULL);
     pthread_cond_init(&q->cond_not_empty, NULL);
     pthread_cond_init(&q->cond_not_full, NULL);

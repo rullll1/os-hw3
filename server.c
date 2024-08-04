@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	getargs(&port, &threads_num, &queue_size, &schedalg, argc, argv);
 
 	Queue q;
-	init_queue(&q, queue_size);
+	init_queue(&q, queue_size, threads_num);
 	pthread_mutex_init(&available_threads_mutex, NULL);
 	pthread_cond_init(&cond_all_available, NULL);
 
@@ -114,15 +114,11 @@ int main(int argc, char *argv[])
     		}
     		else if (schedalg == BLOCK_FLUSH_POLICY) {
     			pthread_mutex_lock(&available_threads_mutex);
-    			while (available_threads != q.size) {
-    				// printf("we have %d threads available\n", available_threads);
-    				// printf("going to sleep now...\n");
+    			while (available_threads != threads_num) {
     				pthread_cond_wait(&cond_all_available, &available_threads_mutex);
-    				// printf("after waking up, we have %d threads available\n", available_threads);
     			}
     			pthread_mutex_unlock(&available_threads_mutex);
     			Close(connfd);
-    			// printf("I am awake now\n");
     		}
     	}
     	else {

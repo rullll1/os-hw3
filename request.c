@@ -218,8 +218,8 @@ void* pick_event_to_run(void* arg)
          Close(run_last);
       }
       pthread_mutex_lock(&available_threads_mutex);
-      available_threads++;  // Mark thread as busy
-      if (available_threads == q->size && q->size != q->count) {
+      available_threads++;
+      if (available_threads == q->max_threads && q->count == 0) {
          pthread_cond_signal(&cond_all_available);
       }
       pthread_mutex_unlock(&available_threads_mutex);

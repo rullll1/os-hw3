@@ -9,12 +9,13 @@ typedef struct {
     int rear;
     int count;
     int size;
+    int max_threads;
     pthread_mutex_t mutex;
     pthread_cond_t cond_not_empty;
     pthread_cond_t cond_not_full;
 } Queue;
 
-void init_queue(Queue *q, int size);
+void init_queue(Queue *q, int size, int max_threads);
 void enqueue(Queue *q, int item);
 int dequeue(Queue *q);
 void destroy_queue(Queue *q);
