@@ -69,14 +69,17 @@ int remove_latest(Queue *q) {
     // while (q->count == 0) {
     //     pthread_cond_wait(&q->cond_not_empty, &q->mutex);
     // }
-
-    // Move rear backwards and remove the last item
-    q->rear = (q->rear - 1 + q->size) % q->size;
-    item = q->items[q->rear];
-    q->count--;
-
+    if (q->count != 0) {
+        // Move rear backwards and remove the last item
+        q->rear = (q->rear - 1 + q->size) % q->size;
+        item = q->items[q->rear];
+        q->count--;
+    }
+    else {
+        item = 0;
+    }
     // Signal that the queue has space
-    // pthread_cond_signal(&q->cond_not_full);
+    pthread_cond_signal(&q->cond_not_full);
     pthread_mutex_unlock(&q->mutex);
     return item;
 }
