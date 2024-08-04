@@ -73,7 +73,7 @@ int remove_latest(Queue *q) {
         // Move rear backwards and remove the last item
         q->rear = (q->rear - 1 + q->size) % q->size;
         item = q->items[q->rear];
-        q->count--;
+        // q->count--;
     }
     else {
         item = 0;

@@ -213,9 +213,12 @@ void* pick_event_to_run(void* arg)
       requestHandle(fd, &request_stat, q, &run_last);
       Close(fd);
       if (run_last != 0) {
-
          requestHandle(run_last, &request_stat, q, &run_last); // TODO: create new stats for new requests
          Close(run_last);
+         pthread_mutex_lock(&q->mutex);
+         q->count -= 1;
+         pthread_mutex_unlock(&q->mutex);
+
       }
       pthread_mutex_lock(&available_threads_mutex);
       available_threads++;
